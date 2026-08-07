@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* One accent, hairline borders, and the only radius in the design is 3px on
+   buttons — see the design handoff. Nothing else should introduce a radius. */
+html {
+  -webkit-font-smoothing: antialiased;
+  /* Must live on the scrolling element. Tailwind's `scroll-smooth` was on an
+     inner div, where it does nothing: anchor navigation is driven by <html>,
+     so every nav click jumped instantly. */
+  scroll-behavior: smooth;
+}
+
+/* Anchored sections stop below the sticky header instead of underneath it. */
+[id]:target,
+section[id] {
+  scroll-margin-top: 76px;
+}
+
+/* --- motion ---------------------------------------------------------------
+   Deliberately quiet: an 8px rise and a fade, nothing that slides across the
+   screen or overshoots. The page is selling careful clinical software, and
+   bouncy marketing motion would argue against it.
+
+   Everything below is opt-in through a class, so any element that never gets
+   observed simply stays visible rather than disappearing. */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.reveal-in {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 480ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 480ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* The language swap changes every string and the text direction at once. A
+   hard cut reads as a page reload; a short fade reads as one surface changing
+   its mind. */
+.lang-swap {
+  animation: lang-fade 320ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@keyframes lang-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Vestibular disorders make parallax and motion genuinely unpleasant, and
+   the setting is a request, not a preference to second-guess: honour it by
+   removing motion entirely rather than shortening it. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-in {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .lang-swap {
+    animation: none;
+  }
+
+  html {
+    scroll-behavior: auto !important;
+  }
+}

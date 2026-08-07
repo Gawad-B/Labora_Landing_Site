@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Labora">
+  <style>
+    /* The delivered file carried stroke-width but no stroke colour, so it drew
+       nothing. Same hue in both schemes, per the design handoff: dark teal on
+       light browser chrome, light teal on dark. */
+    .mark { stroke: #1f5f66; }
+    @media (prefers-color-scheme: dark) {
+      .mark { stroke: #4fb3bd; }
+    }
+  </style>
+  <g class="mark" fill="none" stroke-width="9.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M31 14 V46"></path>
+    <path d="M31 46 H49"></path>
+    <path d="M31 46 C31 57.5 21.5 59.5 14 52"></path>
+  </g>
+</svg>
