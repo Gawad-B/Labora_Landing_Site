@@ -1,1 +1,1 @@
-{"root":["./src/copy.ts","./src/useActiveSection.ts","./src/useReveal.ts","./src/Landing.tsx","./src/main.tsx","./vite.config.ts"],"version":"5.9.3"}
+{"root":["./src/copy.ts","./src/useActiveSection.ts","./src/useOS.ts","./src/useReveal.ts","./src/Landing.tsx","./src/main.tsx","./vite.config.ts"],"version":"5.9.3"}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { COPY, MOCK_ROWS, type Lang } from './copy.js';
 import { useReveal } from './useReveal.js';
 import { useActiveSection } from './useActiveSection.js';
+import { detectOS, type OS } from './useOS.js';
 
 /**
  * Labora marketing page.
@@ -27,6 +28,24 @@ const CONTACT = {
   whatsappHref: '201027321793', // wa.me — no plus
   portfolio: 'gawad-b.github.io',
   portfolioHref: 'https://gawad-b.github.io',
+};
+
+/* ---- downloads ---------------------------------------------------------- */
+
+/**
+ * The public downloads repository.
+ *
+ * Labora's source is private; this repository holds releases and no code. The
+ * asset names deliberately carry no version, so `/releases/latest/download/<name>`
+ * is a permanent address and a download is a plain anchor — no API call, nothing
+ * to rate-limit, and it still works with JavaScript off. The version number below
+ * is fetched only to *display*; it is never on the path to a file.
+ */
+const RELEASES = {
+  repo: 'Gawad-B/labora-releases',
+  page: 'https://github.com/Gawad-B/labora-releases/releases/latest',
+  asset: (name: string) =>
+    `https://github.com/Gawad-B/labora-releases/releases/latest/download/${name}`,
 };
 
 /**
@@ -146,6 +165,7 @@ const NAV_ITEMS = [
   { id: 'queues', label: 'workflow' },
   { id: 'safety', label: 'safety' },
   { id: 'running', label: 'running' },
+  { id: 'download', label: 'download' },
 ] as const;
 
 const NAV_IDS = NAV_ITEMS.map((item) => item.id);
@@ -311,6 +331,16 @@ function Hero({ lang }: { lang: Lang }) {
               className="border-b border-[#c9cfcd] pb-0.5 text-[15px] text-[#55595a] transition-colors duration-200 hover:text-[#1a1d1f]"
             >
               {t.hero.ctaSecondary}
+            </a>
+            {/* Anchored to the section rather than straight at the file: the
+                trial has terms — fourteen days, then read-only — and nobody
+                should meet them for the first time in their downloads folder. */}
+            <a
+              href="#download"
+              className="inline-flex items-center gap-2 border-b border-[#c9cfcd] pb-0.5 text-[15px] text-[#1f5f66] transition-colors duration-200 hover:border-[#1f5f66]"
+            >
+              <DownloadGlyph className="h-3.5 w-3.5 shrink-0" />
+              {t.nav.download}
             </a>
           </div>
           <div className="mt-3 flex flex-wrap gap-x-7 gap-y-2 font-mono text-xs text-[#8a8f8c]">
@@ -489,6 +519,217 @@ function Running({ lang }: { lang: Lang }) {
   );
 }
 
+/** A downward arrow, so a download button reads as one before the label does. */
+function DownloadGlyph({ className = 'h-4 w-4' }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M8 2v8M4.5 7 8 10.5 11.5 7M2.5 13.5h11" />
+    </svg>
+  );
+}
+
+/**
+ * The version of the release the buttons point at.
+ *
+ * Purely decorative, and written that way: the download links are correct before
+ * this resolves and stay correct if it never does. GitHub's unauthenticated API
+ * allows sixty requests an hour per address, and a laboratory behind one router
+ * is one address — so a failure here is expected, not exceptional, and shows
+ * nothing rather than an error or a stale number.
+ */
+function useLatestVersion(): string | null {
+  const [version, setVersion] = useState<string | null>(null);
+  useEffect(() => {
+    const abort = new AbortController();
+    fetch(`https://api.github.com/repos/${RELEASES.repo}/releases/latest`, {
+      signal: abort.signal,
+      headers: { Accept: 'application/vnd.github+json' },
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json: { tag_name?: string } | null) => {
+        const tag = json?.tag_name;
+        if (typeof tag === 'string' && /^v?\d/.test(tag)) setVersion(tag.replace(/^v/, ''));
+      })
+      .catch(() => {
+        /* Offline, rate-limited, or blocked. The buttons do not care. */
+      });
+    return () => abort.abort();
+  }, []);
+  return version;
+}
+
+function PlatformCard({
+  platform,
+  file,
+  primary,
+  lang,
+}: {
+  platform: {
+    name: string;
+    detail: string;
+    button: string;
+    then: string;
+    caveat: string | null;
+  };
+  file: string;
+  /** The one detected as this visitor's: filled button, and first in the DOM. */
+  primary: boolean;
+  lang: Lang;
+}) {
+  const t = COPY[lang];
+  return (
+    <div
+      className={`flex flex-col gap-4 px-[26px] py-7 ${
+        primary ? 'bg-white' : 'bg-[#fcfdfc]'
+      }`}
+    >
+      <div className="flex flex-col gap-1.5">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <span className="text-base font-semibold">{platform.name}</span>
+          {primary && (
+            <span className="bg-[#eef4f4] px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-[#1f5f66]">
+              {t.download.detected}
+            </span>
+          )}
+        </div>
+        <div className="text-[13px] text-[#8a8f8c]" dir="auto">
+          {platform.detail}
+        </div>
+      </div>
+
+      {/* A plain anchor at a permanent URL. No handler, no state, no JavaScript
+          between the click and the file. `download` is advisory only — GitHub
+          redirects to another origin, where the browser ignores it — but it costs
+          nothing and helps where it is honoured. */}
+      <a
+        href={RELEASES.asset(file)}
+        download={file}
+        className={`inline-flex items-center justify-center gap-2.5 rounded-[3px] px-5 py-3 text-[15px] font-medium transition-colors duration-200 ${
+          primary
+            ? 'bg-[#1f5f66] text-white hover:bg-[#16474d]'
+            : 'border border-[#d6dbd9] text-[#1a1d1f] hover:border-[#1f5f66] hover:text-[#1f5f66]'
+        }`}
+      >
+        <DownloadGlyph className="h-4 w-4 shrink-0" />
+        <span>{platform.button}</span>
+      </a>
+
+      {/* The filename, so a reader can match what lands in their downloads folder
+          against SHA256SUMS.txt without guessing. */}
+      <div className="font-mono text-[11px] text-[#8a8f8c]" dir="ltr">
+        {file}
+      </div>
+
+      <p className="text-sm leading-[1.65] text-[#55595a]" dir="auto">
+        {platform.then}
+      </p>
+
+      {platform.caveat && (
+        <p className="border-s-2 border-[#e6d3ad] ps-3 text-[13px] leading-[1.6] text-[#6b5528]" dir="auto">
+          {platform.caveat}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function Download({ lang }: { lang: Lang }) {
+  const t = COPY[lang];
+  const version = useLatestVersion();
+
+  // Resolved after mount, never during render: a value read from `navigator`
+  // while rendering is the kind of thing that works until the page is ever
+  // prerendered, and then silently offers everyone Windows.
+  const [os, setOs] = useState<OS | null>(null);
+  useEffect(() => setOs(detectOS()), []);
+
+  // Windows first until we know better. It is the honest default for a laboratory
+  // PC, and it is only an ordering — the other card is beside it either way.
+  const detected: OS = os ?? 'windows';
+  const order: Array<'windows' | 'linux'> =
+    detected === 'linux' ? ['linux', 'windows'] : ['windows', 'linux'];
+
+  return (
+    <section id="download" className="border-b border-[#e8eae9] bg-[#fafbfa]">
+      <div className="mx-auto max-w-[1120px] px-5 py-[64px] md:px-10 md:py-[84px]">
+        <Reveal className="mb-[44px] flex max-w-[680px] flex-col gap-3.5 md:mb-[52px]">
+          <Eyebrow>{t.download.eyebrow}</Eyebrow>
+          <h2 className="text-[28px] font-semibold leading-[1.15] tracking-[-0.03em] md:text-4xl">
+            {t.download.h2}
+          </h2>
+          <p className="mt-2 text-base leading-[1.7] text-[#4c5153] [text-wrap:pretty]">
+            {t.download.body}
+          </p>
+        </Reveal>
+
+        {/* Neither Windows nor Linux — a phone, a Mac, a Chromebook. Say so
+            plainly instead of offering a file that cannot run. */}
+        {os === 'other' && (
+          <Reveal className="mb-8 border border-[#e3e5e3] bg-white px-[26px] py-6">
+            <div className="text-[14px] font-semibold">{t.download.unknown.title}</div>
+            <p className="mt-2 max-w-[46em] text-[13px] leading-[1.7] text-[#55595a]" dir="auto">
+              {t.download.unknown.body}
+            </p>
+          </Reveal>
+        )}
+
+        <div className="grid gap-px border border-[#e3e5e3] bg-[#e3e5e3] md:grid-cols-2">
+          {order.map((key, i) => (
+            <Reveal key={key} delay={i * 60}>
+              <PlatformCard
+                lang={lang}
+                platform={t.download.platforms[key]}
+                file={t.download.platforms[key].file}
+                primary={os !== null && os !== 'other' && os === key}
+              />
+            </Reveal>
+          ))}
+        </div>
+
+        {/* The agent is not a third way to install Labora, so it does not sit in
+            the grid as if it were. */}
+        <div className="mt-px grid gap-px border-x border-b border-[#e3e5e3] bg-[#e3e5e3]">
+          <PlatformCard
+            lang={lang}
+            platform={t.download.platforms.agent}
+            file={detected === 'windows' ? 'labora-agent.exe' : 'labora-agent'}
+            primary={false}
+          />
+        </div>
+
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-x-8 gap-y-3">
+          <a
+            href={RELEASES.page}
+            target="_blank"
+            rel="noreferrer"
+            className="border-b border-[#c9cfcd] pb-0.5 text-[14px] text-[#55595a] transition-colors duration-200 hover:text-[#1a1d1f]"
+          >
+            {t.download.allDownloads} →
+          </a>
+          {version && (
+            <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-[#8a8f8c]" dir="ltr">
+              {t.download.versionLabel} · {version}
+            </div>
+          )}
+        </div>
+
+        <p className="mt-5 max-w-[46em] text-[13px] leading-[1.7] text-[#8a8f8c]" dir="auto">
+          {t.download.sourceNote}
+        </p>
+      </div>
+    </section>
+  );
+}
+
 function Contact({ lang }: { lang: Lang }) {
   const t = COPY[lang];
   return (
@@ -617,6 +858,7 @@ export default function Landing() {
         <Queues lang={lang} />
         <Safety lang={lang} />
         <Running lang={lang} />
+        <Download lang={lang} />
         <Contact lang={lang} />
       </main>
       <Footer lang={lang} />

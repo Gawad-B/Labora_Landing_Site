@@ -30,6 +30,31 @@ either into the page makes it wrong for half the year.
 There is no contact form, deliberately — a form with no endpoint behind it is
 worse than none. The page offers direct channels instead.
 
+## Downloads
+
+The download buttons point at
+[`Gawad-B/labora-releases`](https://github.com/Gawad-B/labora-releases) — a
+public repository holding Labora's installers and no code. Labora's own
+repository is private, and a laboratory downloading an installer has no GitHub
+account.
+
+Two decisions there are worth not undoing:
+
+**The links are plain anchors at a permanent address.** Assets on that
+repository carry no version — `LaboraSetup.exe`, not `LaboraSetup-2.0.1.exe` — so
+`/releases/latest/download/LaboraSetup.exe` is correct for ever. The version
+shown beside them is fetched from GitHub's API purely to *display*, and the page
+is complete without it: that API allows sixty unauthenticated requests an hour
+per address, and a clinic behind one router is one address. Resolving a download
+URL through it would mean the button stops working for everybody at the
+building, which is the one failure this page cannot afford.
+
+**Detection decides the order, never the availability.** `src/useOS.ts` answers
+one question — is there a build this visitor can run? — and both platforms are
+on the page either way. Android and ChromeOS both say "Linux" in their user
+agent and can run neither build, so they are matched first and shown the choice
+instead of a tarball. macOS is not supported and says so.
+
 ## Content
 
 `src/copy.ts` holds every string in English and Arabic. The page defaults to

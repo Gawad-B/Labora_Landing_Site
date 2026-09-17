@@ -54,6 +54,7 @@ export const COPY = {
       workflow: 'Workflow',
       safety: 'Quality',
       running: 'Installation',
+      download: 'Download',
       cta: 'Get in touch',
     },
 
@@ -200,8 +201,54 @@ export const COPY = {
       ],
     },
 
+    download: {
+      eyebrow: '05 — Download',
+      h2: 'Run it for a fortnight before you decide.',
+      body: 'A fresh installation runs for fourteen days without a code. Nothing is crippled in the meantime — it is the whole system, against your own test list. When the trial ends the lab can still read, search and print every report it already has; only new work stops until a code is entered. There is no account to make and nothing to cancel.',
+      // Filled in from the release the button points at, and hidden if GitHub
+      // cannot be reached — a stale version number is worse than none.
+      versionLabel: 'Latest release',
+      detected: 'Detected on your machine',
+      notYours: 'Not your machine?',
+      allDownloads: 'All downloads and checksums',
+      sourceNote: 'Labora’s source is private. The installers are published openly here.',
+      platforms: {
+        windows: {
+          name: 'Windows',
+          detail: 'Windows 10 or 11, 64-bit',
+          button: 'Download for Windows',
+          file: 'LaboraSetup.exe',
+          then: 'Run it as Administrator. It installs PostgreSQL, sets its own passwords, and will not report success until the system answers.',
+          // Honest about the thing every Windows user will actually hit.
+          caveat: 'Unsigned, so SmartScreen warns on first run. Check the SHA-256 against SHA256SUMS.txt.',
+        },
+        linux: {
+          name: 'Linux',
+          detail: 'Debian, Ubuntu, Fedora, RHEL, Arch and their derivatives',
+          button: 'Download for Linux',
+          file: 'labora-linux-x64.tar.gz',
+          then: 'Unpack it, then run sudo ./install.sh. The tarball carries its own Node and web server, so nothing is asked of your distribution but PostgreSQL.',
+          caveat: null,
+        },
+        agent: {
+          name: 'Analyzer agent',
+          detail: 'For the PC wired to an instrument',
+          button: 'Download the agent',
+          file: 'labora-agent',
+          then: 'Only needed on a machine connected to an analyzer. Copy it and a .env beside it — it reads the instrument and sends results to the server.',
+          caveat: null,
+        },
+      },
+      // Shown while the platform is still unknown, and on anything that is
+      // neither Windows nor Linux.
+      unknown: {
+        title: 'Choose your platform',
+        body: 'Labora installs on Windows or on Linux. macOS is not supported: the machine this runs on sits in the laboratory and stays on.',
+      },
+    },
+
     contact: {
-      eyebrow: '05 — Get in touch',
+      eyebrow: '06 — Get in touch',
       h2: 'See it run on your own test list.',
       body: 'The fastest way to judge this is to watch it handle work you recognise. Message me and we will arrange a demonstration and go through what installing it would involve.',
       rows: [
@@ -239,6 +286,7 @@ export const COPY = {
       workflow: 'سير العمل',
       safety: 'الجودة',
       running: 'التركيب',
+      download: 'التحميل',
       cta: 'تواصل معي',
     },
 
@@ -380,8 +428,49 @@ export const COPY = {
       ],
     },
 
+    download: {
+      eyebrow: '٠٥ — التحميل',
+      h2: 'جرّبوه أسبوعين قبل أن تقرروا.',
+      body: 'التثبيت الجديد يعمل أربعة عشر يومًا بلا كود. ولا شيء منقوص خلالها — هو النظام كاملًا على قائمة تحاليلكم أنتم. وحين تنتهي المدة يظل المعمل قادرًا على قراءة تقاريره وطباعتها والبحث فيها، ويتوقف العمل الجديد وحده حتى يُدخَل الكود. لا حساب تُنشئونه ولا اشتراك تُلغونه.',
+      versionLabel: 'أحدث إصدار',
+      detected: 'المكتشَف على جهازكم',
+      notYours: 'جهاز آخر؟',
+      allDownloads: 'كل الملفات وبصماتها',
+      sourceNote: 'الشيفرة المصدرية للنظام غير منشورة. أما برامج التثبيت فمتاحة هنا للجميع.',
+      platforms: {
+        windows: {
+          name: 'ويندوز',
+          detail: 'ويندوز ١٠ أو ١١، ٦٤ بت',
+          button: 'تحميل لويندوز',
+          file: 'LaboraSetup.exe',
+          then: 'شغّلوه كمسؤول. يثبّت قاعدة البيانات ويولّد كلمات السر بنفسه، ولا يعلن نجاحه قبل أن يستجيب النظام.',
+          caveat: 'غير موقَّع رقميًا، فيحذّر منه ويندوز أول مرة. تحققوا من بصمة SHA-256 في ملف SHA256SUMS.txt.',
+        },
+        linux: {
+          name: 'لينكس',
+          detail: 'دبيان وأوبنتو وفيدورا وريدهات وآرتش ومشتقاتها',
+          button: 'تحميل للينكس',
+          file: 'labora-linux-x64.tar.gz',
+          then: 'فُكّوا الضغط ثم شغّلوا sudo ./install.sh. الحزمة تحمل بيئة التشغيل وخادم الويب معها، فلا تطلب من توزيعتكم سوى قاعدة البيانات.',
+          caveat: null,
+        },
+        agent: {
+          name: 'وسيط الأجهزة',
+          detail: 'للجهاز الموصول بالتحليل',
+          button: 'تحميل الوسيط',
+          file: 'labora-agent',
+          then: 'لا يلزم إلا على جهاز موصول بجهاز تحليل. انسخوه وملف .env بجواره — يقرأ من الجهاز ويرسل النتائج إلى الخادم.',
+          caveat: null,
+        },
+      },
+      unknown: {
+        title: 'اختاروا نظامكم',
+        body: 'يُثبَّت لابورا على ويندوز أو لينكس. أما ماك فغير مدعوم: الجهاز الذي يعمل عليه النظام يقيم في المعمل ويبقى مشتغلًا.',
+      },
+    },
+
     contact: {
-      eyebrow: '٠٥ — تواصل معي',
+      eyebrow: '٠٦ — تواصل معي',
       h2: 'شاهده يعمل على قائمة تحاليلكم أنتم.',
       body: 'أسرع طريقة للحكم على النظام أن تروه يتعامل مع عمل تعرفونه. راسلوني لنرتّب عرضًا عمليًا ونستعرض ما يتطلبه التركيب.',
       rows: [
